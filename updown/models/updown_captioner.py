@@ -1,3 +1,4 @@
+
 import functools
 from typing import Dict, List, Tuple, Optional
 import numpy as np
@@ -65,6 +66,7 @@ class UpDownCaptioner(nn.Module):
         beam_size: int = 1,
         use_cbs: bool = False,
         min_constraints_to_satisfy: int = 2,
+        mask_name: str = 'zzzzzzzz'
     ) -> None:
         super().__init__()
         self._vocabulary = vocabulary
@@ -82,6 +84,7 @@ class UpDownCaptioner(nn.Module):
         _vocab_size = vocabulary.get_vocab_size()
         self._pad_index = vocabulary.get_token_index("@@UNKNOWN@@")
         self._boundary_index = vocabulary.get_token_index("@@BOUNDARY@@")
+        self._mask_index = vocabulary.get_token_index(mask_name)
 
         # Initialize embedding layer with GloVe embeddings and freeze it if the specified size
         # is 300. CBS cannot be supported for any other embedding size, using CBS is optional
@@ -143,6 +146,7 @@ class UpDownCaptioner(nn.Module):
             max_caption_length=_C.DATA.MAX_CAPTION_LENGTH,
             use_cbs=_C.MODEL.USE_CBS,
             min_constraints_to_satisfy=_C.MODEL.MIN_CONSTRAINTS_TO_SATISFY,
+            mask_name = _C.MASK_NAME
         )
 
     def _initialize_glove(self) -> torch.Tensor:
@@ -377,7 +381,15 @@ class UpDownCaptioner(nn.Module):
         # shape: (batch_size, )
         target_lengths = torch.sum(target_mask, dim=-1).float()
 
-        # shape: (batch_size, )
-        return target_lengths * sequence_cross_entropy_with_logits(
+        counts = torch.sum(targets == self._mask_index, dim=1)
+        # add to loss if no mask token predicted
+        no_mention_penalty = (counts == 0) * 50
+        # add to loss if too many mask tokens predicted (none if only one predicted)
+        mention_penalty = (50 * torch.mul((counts > 0).long(), counts - 1))
+
+        loss = target_lengths * sequence_cross_entropy_with_logits(
             logits, targets, target_mask, average=None
-        )
+        ) + no_mention_penalty.float() + mention_penalty.float()
+
+        # shape: (batch_size, )
+        return loss

@@ -130,6 +130,7 @@ class Config(object):
 
         _C = CN()
         _C.RANDOM_SEED = 0
+        _C.MASK_NAME = 'zzzzzzzz'
 
         _C.DATA = CN()
         _C.DATA.VOCABULARY = "data/vocabulary"
@@ -140,6 +141,7 @@ class Config(object):
         # DATA.INFER_CAPTIONS don't contain the captions, just the image info.
         _C.DATA.TRAIN_CAPTIONS = "data/coco/captions_train2017.json"
         _C.DATA.INFER_CAPTIONS = "data/nocaps/nocaps_val_image_info.json"
+        _C.DATA.INFER_NAMES = "data/nocaps/nocaps_val_names.txt"
 
         _C.DATA.MAX_CAPTION_LENGTH = 20
 

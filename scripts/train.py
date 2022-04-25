@@ -110,8 +110,6 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------------------------
 
     vocabulary = Vocabulary.from_files(_C.DATA.VOCABULARY)
-    print(vocabulary)
-    exit(-1)
 
     # If we wish to use CBS during evaluation or inference, expand the vocabulary and add
     # constraint words derived from Open Images classes.
@@ -153,6 +151,10 @@ if __name__ == "__main__":
         num_workers=_A.cpu_workers,
         collate_fn=val_dataset.collate_fn,
     )
+
+    with open(_C.DATA.INFER_NAMES) as f:
+        import ast
+        val_names = ast.literal_eval(f.read())
 
     model = UpDownCaptioner.from_config(_C, vocabulary=vocabulary).to(device)
     if len(_A.gpu_ids) > 1 and -1 not in _A.gpu_ids:
@@ -254,8 +256,10 @@ if __name__ == "__main__":
                         caption = (
                             caption[: eos_occurences[0]] if len(eos_occurences) > 0 else caption
                         )
+                        caption = " ".join(caption)
+                        caption.replace(_C.MASK_NAME, val_names[image_id.item()])
                         predictions.append(
-                            {"image_id": image_id.item(), "caption": " ".join(caption)}
+                            {"image_id": image_id.item(), "caption": caption}
                         )
 
                 model.train()
@@ -263,7 +267,7 @@ if __name__ == "__main__":
                 # Print first 25 captions with their Image ID.
                 for k in range(25):
                     print(predictions[k]["image_id"], predictions[k]["caption"])
-
+                exit(-1)
                 # Get evaluation metrics for nocaps val phase from EvalAI.
                 # keys: {"B1", "B2", "B3", "B4", "METEOR", "ROUGE-L", "CIDEr", "SPICE"}
                 # In each of these, keys:  {"in-domain", "near-domain", "out-domain", "entire"}
