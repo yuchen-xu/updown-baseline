@@ -1,0 +1,1 @@
+python scripts/train.py --config configs/updown_nocaps_val.yaml --config-override OPTIM.NUM_ITERATIONS 102 --gpu-ids 0 --serialization-dir checkpoints/updown --checkpoint-every 100
