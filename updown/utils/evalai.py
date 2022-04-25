@@ -96,10 +96,17 @@ class NocapsEvaluator(object):
         ].decode("utf-8")
 
         submission_id_regex = re.search("evalai submission ([0-9]+)", submission_command_stdout)
+
+        i = 50
+
         try:
             # Get an integer submission ID (as a string).
             submission_id = submission_id_regex.group(0).split()[-1]  # type: ignore
         except:
+            i -= 1
+            if i <= 0:
+                print('Submitted to evalai too many times, there is likely an error with evalai. Exiting...')
+                exit(1)
             # Very unlikely, but submission may fail because of some glitch. Retry for that.
             return self.evaluate(predictions)
 

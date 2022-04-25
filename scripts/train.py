@@ -110,6 +110,8 @@ if __name__ == "__main__":
     # --------------------------------------------------------------------------------------------
 
     vocabulary = Vocabulary.from_files(_C.DATA.VOCABULARY)
+    print(vocabulary)
+    exit(-1)
 
     # If we wish to use CBS during evaluation or inference, expand the vocabulary and add
     # constraint words derived from Open Images classes.
