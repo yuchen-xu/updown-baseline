@@ -257,7 +257,7 @@ if __name__ == "__main__":
                             caption[: eos_occurences[0]] if len(eos_occurences) > 0 else caption
                         )
                         caption = " ".join(caption)
-                        caption.replace(_C.MASK_NAME, val_names[image_id.item()])
+                        caption.replace(_C.MASK_NAME, val_names.get(image_id.item(), ''))
                         predictions.append(
                             {"image_id": image_id.item(), "caption": caption}
                         )
@@ -267,7 +267,7 @@ if __name__ == "__main__":
                 # Print first 25 captions with their Image ID.
                 for k in range(25):
                     print(predictions[k]["image_id"], predictions[k]["caption"])
-                exit(-1)
+
                 # Get evaluation metrics for nocaps val phase from EvalAI.
                 # keys: {"B1", "B2", "B3", "B4", "METEOR", "ROUGE-L", "CIDEr", "SPICE"}
                 # In each of these, keys:  {"in-domain", "near-domain", "out-domain", "entire"}
