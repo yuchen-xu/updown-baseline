@@ -383,13 +383,13 @@ class UpDownCaptioner(nn.Module):
 
         counts = torch.sum(targets == self._mask_index, dim=1)
         # add to loss if no mask token predicted
-        no_mention_penalty = (counts == 0) * 50
+        # no_mention_penalty = (counts == 0) * 50
         # add to loss if too many mask tokens predicted (none if only one predicted)
         mention_penalty = (50 * torch.mul((counts > 0).long(), counts - 1))
 
         loss = target_lengths * sequence_cross_entropy_with_logits(
             logits, targets, target_mask, average=None
-        ) + no_mention_penalty.float() + mention_penalty.float()
+        ) + mention_penalty.float()
 
         # shape: (batch_size, )
         return loss

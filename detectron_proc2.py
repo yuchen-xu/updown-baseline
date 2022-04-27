@@ -1,5 +1,5 @@
 DATA_PATH = 'data/coco/train2017'
-OUT = 'data/coco/train_detectron1.json'
+OUT = 'data/coco/train_detectron2.json'
 
 import torch, torchvision
 
@@ -42,7 +42,7 @@ img_to_boxes = dict()
 file_list = os.listdir(DATA_PATH)
 
 qtr = len(file_list) // 4
-file_list = file_list[:qtr]
+file_list = file_list[qtr:qtr*2]
 
 for i, file in enumerate(tqdm(file_list)):
     im = cv2.imread(os.path.join(DATA_PATH, file))
