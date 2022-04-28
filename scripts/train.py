@@ -256,8 +256,13 @@ if __name__ == "__main__":
                         caption = (
                             caption[: eos_occurences[0]] if len(eos_occurences) > 0 else caption
                         )
-                        caption = " ".join(caption)
-                        caption.replace(_C.MASK_NAME, val_names.get(image_id.item(), ''))
+                        replacement = []
+                        for word in caption:
+                            if word != _C.MASK_NAME:
+                                replacement.append(word)
+                            elif image_id.item() in val_names:
+                                replacement.append(val_names[image_id.item()])
+                        caption = " ".join(replacement)
                         predictions.append(
                             {"image_id": image_id.item(), "caption": caption}
                         )

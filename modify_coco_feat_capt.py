@@ -22,15 +22,20 @@ for image in b['images']:
         img_id_to_box[image['id']] = detect[image['file_name']]['box']
         out['images'].append(image)
 
+count = 0
 for annotation in b['annotations']:
     if annotation['image_id'] in img_id_to_name:
         annotation['caption'] = annotation['caption'].replace(img_id_to_name[annotation['image_id']], 'zzzzzzzz')
         out['annotations'].append(annotation)
+        if 'zzzzzzzz' in annotation:
+            count += 1
 
 with open('data/coco/expt.json', 'w') as f:
     f.write(json.dumps(out))
 
-
+print(f'Average captions per image: {len(out["annotations"]) / len(out["images"]):.2f}')
+print(f'Average captions modified per image: {count / len(out["images"]):.2f}')
+print()
 
 # features are 2048d
 # bounding boxes are (x1, y1, x2, y2) for both h5 and Detectron outputs
@@ -95,16 +100,19 @@ for i, image_id in enumerate(tqdm(hf['image_id'])):
 
     hf['boxes'][i] = new_boxes[:4*new_count]
     hf['features'][i] = new_features[:2048*new_count]
+    hf['num_boxes'][i] = new_count
 
     avg_boxes_before += num_boxes
     avg_boxes_after += new_count
 
-for key in hf.keys():
+for key in tqdm(hf.keys()):
     tmp = hf[key][keep_inds]
     del hf[key]
     hf.create_dataset(key, data=tmp)
 
-print('Average # boxes before: ', avg_boxes_before / len(hf['num_boxes']))
-print('Average # boxes after: ', avg_boxes_after / len(hf['num_boxes']))
+# coco train
+# -2.5
+print(f'Average # boxes before: {avg_boxes_before / len(hf["num_boxes"]):.2f}')
+print(f'Average # boxes after: {avg_boxes_after / len(hf["num_boxes"]):.2f}')
 
 hf.close()

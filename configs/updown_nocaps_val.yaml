@@ -6,7 +6,7 @@ DATA:
   TRAIN_FEATURES: data/coco_train2017_vg_detector_features_adaptive.h5
   INFER_FEATURES: data/nocaps_val_vg_detector_features_adaptive.h5
 
-  TRAIN_CAPTIONS: data/coco/captions_train2017.json
+  TRAIN_CAPTIONS: data/coco/captions_train2017_mod.json
   INFER_CAPTIONS: data/nocaps/nocaps_val_image_info.json
   INFER_NAMES: data/nocaps/nocaps_val_names.txt
 
