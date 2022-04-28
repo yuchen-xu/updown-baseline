@@ -1,5 +1,5 @@
-DATA_PATH = 'data/nocaps/val'
-OUT = 'data/nocaps/val_detectron.json'
+DATA_PATH = 'data/nocaps/test'
+OUT = 'data/nocaps/test_detectron.json'
 
 import torch, torchvision
 

@@ -74,7 +74,10 @@ class NocapsEvaluator(object):
 
         """
         # Save predictions as a json file first.
-        _, predictions_filename = tempfile.mkstemp(suffix=".json", text=True)
+        if iteration is not None:
+            predictions_filename = f'/tmp/iter_{iteration}.json'
+        else:
+            _, predictions_filename = tempfile.mkstemp(suffix=".json", text=True)
         with open(predictions_filename, "w") as f:
             json.dump(predictions, f)
 

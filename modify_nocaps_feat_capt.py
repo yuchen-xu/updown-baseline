@@ -5,10 +5,10 @@ import numpy as np
 from tqdm import tqdm
 import h5py
 
-with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_val_image_info.json') as f:
+with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_train_image_info.json') as f:
     b = json.loads(f.read())
 
-with open('/home/ubuntu/updown-baseline/data/nocaps/val_detectron.json') as f:
+with open('/home/ubuntu/updown-baseline/data/nocaps/train_detectron.json') as f:
     detect = json.loads(f.read())
 
 img_id_to_box = {}
