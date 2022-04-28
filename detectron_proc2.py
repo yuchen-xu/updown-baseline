@@ -25,7 +25,7 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 cfg = get_cfg()
-cfg.MODEL.DEVICE='cpu'
+# cfg.MODEL.DEVICE='cpu'
 # add project-specific config (e.g., TensorMask) here if you're not running a model in detectron2's core library
 cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
@@ -54,7 +54,8 @@ for i, file in enumerate(tqdm(file_list)):
         continue
 
     # plus one because Detectron doesn't have background (0 in coco)
-    img_to_boxes[file] = {'box' : outputs['instances'].pred_boxes[0].tensor.numpy().tolist()[0], 'name' : coco_labels[outputs['instances'].pred_classes[0].item()+1]}
+    img_to_boxes[file] = {'box' : outputs['instances'].pred_boxes[0].tensor.cpu().numpy().tolist()[0], 
+                          'name' : coco_labels[outputs['instances'].pred_classes[0].item()+1]}
 
     if i % 1000 == 0:
         with open(OUT, 'w') as f:
