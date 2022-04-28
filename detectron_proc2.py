@@ -1,5 +1,5 @@
-DATA_PATH = 'data/coco/train2017'
-OUT = 'data/coco/train_detectron2.json'
+DATA_PATH = 'train2017'
+OUT = 'train_detectron2.json'
 
 import torch, torchvision
 
@@ -40,6 +40,7 @@ with open('data/coco_classnames.txt') as f:
 img_to_boxes = dict()
 
 file_list = os.listdir(DATA_PATH)
+file_list.sort()
 
 qtr = len(file_list) // 4
 file_list = file_list[qtr:qtr*2]

@@ -1,5 +1,5 @@
-DATA_PATH = 'data/nocaps/test'
-OUT = 'data/nocaps/test_detectron.json'
+DATA_PATH = 'train2017'
+OUT = 'train_detectron1.json'
 
 import torch, torchvision
 
@@ -40,16 +40,14 @@ with open('data/coco_classnames.txt') as f:
 img_to_boxes = dict()
 
 file_list = os.listdir(DATA_PATH)
+file_list.sort()
 
-# qtr = len(file_list) // 4
-# file_list = file_list[:qtr]
+qtr = len(file_list) // 4
+file_list = file_list[:qtr]
 
 for i, file in enumerate(tqdm(file_list)):
-    file_name = os.path.join(DATA_PATH, file)
-    im = cv2.imread(file_name)
+    im = cv2.imread(os.path.join(DATA_PATH, file))
     outputs = predictor(im)
-
-    os.remove(file_name)
 
     # pick the highest confidence non-background object
     if len(outputs['instances'].pred_boxes) == 0:

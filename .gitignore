@@ -48,3 +48,5 @@ docs/_build
 # virtualenv
 venv/
 ENV/
+train2017/
+train2017.zip
