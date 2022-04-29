@@ -9,7 +9,7 @@ import h5py
 with open('data/coco/captions_train2017.json') as f:
     b = json.loads(f.read())
 
-with open('data/coco/train_detectron1.json') as f:
+with open('data/coco/train_detectron.json') as f:
     detect = json.loads(f.read())
 
 out = {'info' : b['info'], 'licenses' : b['licenses'], 'images' : [], 'annotations' : []}
@@ -27,12 +27,14 @@ for annotation in b['annotations']:
     if annotation['image_id'] in img_id_to_name:
         annotation['caption'] = annotation['caption'].replace(img_id_to_name[annotation['image_id']], 'zzzzzzzz')
         out['annotations'].append(annotation)
-        if 'zzzzzzzz' in annotation:
+        if 'zzzzzzzz' in annotation['caption']:
             count += 1
 
-with open('data/coco/expt.json', 'w') as f:
+with open('data/coco/captions_train2017_mod.json', 'w') as f:
     f.write(json.dumps(out))
 
+# Average captions per image: 5.00
+# Average captions modified per image: 2.00
 print(f'Average captions per image: {len(out["annotations"]) / len(out["images"]):.2f}')
 print(f'Average captions modified per image: {count / len(out["images"]):.2f}')
 print()
