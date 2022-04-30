@@ -258,10 +258,12 @@ if __name__ == "__main__":
                         )
                         replacement = []
                         for word in caption:
-                            if word != _C.MASK_NAME:
+                            if word != _C.MASK_NAME and word != _C.MASK_NAME + 's':
                                 replacement.append(word)
                             elif image_id.item() in val_names:
-                                replacement.append(val_names[image_id.item()])
+                                actual = val_names[image_id.item()]
+                                actual += 's' if word[-1] == 's' else ''
+                                replacement.append(actual)
                         caption = " ".join(replacement)
                         predictions.append(
                             {"image_id": image_id.item(), "caption": caption}

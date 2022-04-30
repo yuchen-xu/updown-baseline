@@ -1,15 +1,18 @@
 # 4237 / 4500 nocaps val images have detections
+# 10030 / 10600 nocaps test images have detections
 
 import json
 import numpy as np
 from tqdm import tqdm
 import h5py
 
-with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_train_image_info.json') as f:
+with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_test_image_info.json') as f:
     b = json.loads(f.read())
 
-with open('/home/ubuntu/updown-baseline/data/nocaps/train_detectron.json') as f:
+with open('/home/ubuntu/updown-baseline/data/nocaps/test_detectron.json') as f:
     detect = json.loads(f.read())
+
+print(f'{len(detect)} / {len(b['images'])} images have detections.')
 
 img_id_to_box = {}
 out = {}
@@ -19,13 +22,13 @@ for image in b['images']:
         img_id_to_box[image['id']] = detect[image['file_name']]['box']
         out[image['id']] =  detect[image['file_name']]['name']
 
-with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_val_names.txt', 'w') as f:
+with open('/home/ubuntu/updown-baseline/data/nocaps/nocaps_test_names.txt', 'w') as f:
     print(out, file=f)
 
 # features are 2048d
 # bounding boxes are (x1, y1, x2, y2) for both h5 and Detectron outputs
 
-hf = h5py.File('/home/ubuntu/updown-baseline/data/nocaps_val_vg_detector_features_adaptive.h5', 'r+')
+hf = h5py.File('/home/ubuntu/updown-baseline/data/nocaps_test_vg_detector_features_adaptive.h5', 'r+')
 
 # method adapted from https://stackoverflow.com/questions/25349178/calculating-percentage-of-bounding-box-overlap-for-image-detector-evaluation
 def iou(bb1, bb2):
@@ -64,15 +67,16 @@ def iou(bb1, bb2):
     return iou
 
 avg_boxes_before, avg_boxes_after = 0, 0
-keep_inds = []
+# keep_inds = []
 
 for i, image_id in enumerate(tqdm(hf['image_id'])):
+    num_boxes = hf['num_boxes'][i]
+    avg_boxes_before += num_boxes
+
     if image_id not in img_id_to_box:
+        avg_boxes_after += num_boxes
         continue
 
-    keep_inds.append(i)
-
-    num_boxes = hf['num_boxes'][i]
     # easier to create a larger thing then trim down, compared to append (not in-place for numpy)
     new_boxes, new_features = np.zeros(num_boxes * 4), np.zeros(num_boxes * 2048)
     new_count = 0
@@ -87,17 +91,19 @@ for i, image_id in enumerate(tqdm(hf['image_id'])):
     hf['features'][i] = new_features[:2048*new_count]
     hf['num_boxes'][i] = new_count
 
-    avg_boxes_before += num_boxes
     avg_boxes_after += new_count
 
-for key in tqdm(hf.keys()):
-    tmp = hf[key][keep_inds]
-    del hf[key]
-    hf.create_dataset(key, data=tmp)
+# for key in tqdm(hf.keys()):
+#     tmp = hf[key][keep_inds]
+#     del hf[key]
+#     hf.create_dataset(key, data=tmp)
 
 # val:
 # Average # boxes before: 28.42
 # Average # boxes after: 25.15
+# test:
+# Average # boxes before: 28.39
+# Average # boxes after: 25.26
 print(f'Average # boxes before: {avg_boxes_before / len(hf["num_boxes"]):.2f}')
 print(f'Average # boxes after: {avg_boxes_after / len(hf["num_boxes"]):.2f}')
 

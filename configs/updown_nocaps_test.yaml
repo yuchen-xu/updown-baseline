@@ -1,4 +1,5 @@
 RANDOM_SEED: 0
+MASK_NAME: zzzzzzzz
 
 DATA:
   VOCABULARY: data/vocabulary
@@ -7,6 +8,7 @@ DATA:
 
   TRAIN_CAPTIONS: data/coco/captions_train2017.json
   INFER_CAPTIONS: data/nocaps/nocaps_test_image_info.json
+  INFER_NAMES: data/nocaps/nocaps_test_names.txt
 
   MAX_CAPTION_LENGTH: 20
 

@@ -1,1 +1,3 @@
-python scripts/train.py --config configs/updown_nocaps_val.yaml --config-override OPTIM.NUM_ITERATIONS 102 --gpu-ids 0 --serialization-dir checkpoints/updown --checkpoint-every 100
+python scripts/train.py --config configs/updown_nocaps_val.yaml --gpu-ids 0 --serialization-dir checkpoints/updown
+python scripts/inference.py --config configs/updown_nocaps_test.yaml --checkpoint-path checkpoints/updown/checkpoint_best.pth --output-path outputs/predictions.json --gpu-ids 0
+--evalai-submit

@@ -20,23 +20,24 @@ for image in b['images']:
     if image['file_name'] in detect:
         img_id_to_name[image['id']] = detect[image['file_name']]['name']
         img_id_to_box[image['id']] = detect[image['file_name']]['box']
-        out['images'].append(image)
+    out['images'].append(image)
 
 count = 0
 for annotation in b['annotations']:
     if annotation['image_id'] in img_id_to_name:
         annotation['caption'] = annotation['caption'].replace(img_id_to_name[annotation['image_id']], 'zzzzzzzz')
-        out['annotations'].append(annotation)
-        if 'zzzzzzzz' in annotation['caption']:
-            count += 1
+    out['annotations'].append(annotation)
+    if 'zzzzzzzz' in annotation['caption']:
+        count += 1
 
 with open('data/coco/captions_train2017_mod.json', 'w') as f:
     f.write(json.dumps(out))
 
-# Average captions per image: 5.00
-# Average captions modified per image: 2.00
-print(f'Average captions per image: {len(out["annotations"]) / len(out["images"]):.2f}')
-print(f'Average captions modified per image: {count / len(out["images"]):.2f}')
+# Average captions per image: 5.0027
+# Average captions modified per image: 1.9987
+# 117432 / 118287 modified
+print(f'Average captions per image: {len(out["annotations"]) / len(out["images"]):.4f}')
+print(f'Average captions modified per image: {count / len(img_id_to_name):.4f}')
 print()
 
 # features are 2048d
@@ -81,15 +82,18 @@ def iou(bb1, bb2):
     return iou
 
 avg_boxes_before, avg_boxes_after = 0, 0
-keep_inds = []
+# keep_inds = []
 
 for i, image_id in enumerate(tqdm(hf['image_id'])):
+    num_boxes = hf['num_boxes'][i]
+    avg_boxes_before += num_boxes
+
     if image_id not in img_id_to_box:
+        avg_boxes_after += num_boxes
         continue
 
-    keep_inds.append(i)
+#     keep_inds.append(i)
 
-    num_boxes = hf['num_boxes'][i]
     # easier to create a larger thing then trim down, compared to append (not in-place for numpy)
     new_boxes, new_features = np.zeros(num_boxes * 4), np.zeros(num_boxes * 2048)
     new_count = 0
@@ -104,17 +108,16 @@ for i, image_id in enumerate(tqdm(hf['image_id'])):
     hf['features'][i] = new_features[:2048*new_count]
     hf['num_boxes'][i] = new_count
 
-    avg_boxes_before += num_boxes
     avg_boxes_after += new_count
 
-for key in tqdm(hf.keys()):
-    tmp = hf[key][keep_inds]
-    del hf[key]
-    hf.create_dataset(key, data=tmp)
+# for key in tqdm(hf.keys()):
+#     tmp = hf[key][keep_inds]
+#     del hf[key]
+#     hf.create_dataset(key, data=tmp)
 
 # coco train
 # -2.5
-print(f'Average # boxes before: {avg_boxes_before / len(hf["num_boxes"]):.2f}')
-print(f'Average # boxes after: {avg_boxes_after / len(hf["num_boxes"]):.2f}')
+print(f'Average # boxes before: {avg_boxes_before / len(hf["num_boxes"]):.4f}')
+print(f'Average # boxes after: {avg_boxes_after / len(hf["num_boxes"]):.4f}')
 
 hf.close()

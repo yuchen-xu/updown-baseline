@@ -112,6 +112,10 @@ if __name__ == "__main__":
         collate_fn=infer_dataset.collate_fn,
     )
 
+    with open(_C.DATA.INFER_NAMES) as f:
+        import ast
+        val_names = ast.literal_eval(f.read())
+
     # Load checkpoint. Don't complain about missing embeddings, they might be absent if frozen.
     model = UpDownCaptioner.from_config(_C, vocabulary=vocabulary).to(device)
     model.load_state_dict(torch.load(_A.checkpoint_path)["model"])
@@ -148,9 +152,20 @@ if __name__ == "__main__":
             caption = [vocabulary.get_token_from_index(p.item()) for p in instance_predictions]
             eos_occurences = [j for j in range(len(caption)) if caption[j] == "@@BOUNDARY@@"]
             caption = caption[: eos_occurences[0]] if len(eos_occurences) > 0 else caption
+            
+            replacement = []
+            for word in caption:
+                if word != _C.MASK_NAME and word != _C.MASK_NAME + 's':
+                    replacement.append(word)
+                elif image_id.item() in val_names:
+                    actual = val_names[image_id.item()]
+                    actual += 's' if word[-1] == 's' else ''
+                    replacement.append(actual)
+            caption = " ".join(replacement)
 
-            predictions.append({"image_id": image_id.item(), "caption": " ".join(caption)})
-
+            predictions.append(
+                {"image_id": image_id.item(), "caption": caption}
+            )
     # Print first 25 captions with their Image ID.
     for k in range(25):
         print(predictions[k]["image_id"], predictions[k]["caption"])
@@ -158,7 +173,7 @@ if __name__ == "__main__":
     json.dump(predictions, open(_A.output_path, "w"))
 
     if _A.evalai_submit:
-        evaluator = NocapsEvaluator("val")
+        evaluator = NocapsEvaluator(phase="test")
         evaluation_metrics = evaluator.evaluate(predictions)
 
         print(f"Evaluation metrics for checkpoint {_A.checkpoint_path}:")

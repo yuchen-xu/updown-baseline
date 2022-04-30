@@ -1,6 +1,6 @@
 RANDOM_SEED: 0
 MASK_NAME: zzzzzzzz
-
+ 
 DATA:
   VOCABULARY: data/vocabulary
   TRAIN_FEATURES: data/coco_train2017_vg_detector_features_adaptive.h5
